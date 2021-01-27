@@ -62,6 +62,7 @@ var (
 	closeMapBytes         = []byte("]")
 	lenEqualsBytes        = []byte("len=")
 	capEqualsBytes        = []byte("cap=")
+
 	highlight1StartBytes  = []byte("\x1b[32m")
 	highlight2StartBytes  = []byte("\x1b[33m")
 	highlight3StartBytes  = []byte("\x1b[34m")
