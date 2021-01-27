@@ -311,7 +311,7 @@ func (d *dumpState) dump(v reflect.Value) {
 
 	highlightIsOn := false
 	if d.cs.HighlightValues {
-		d.w.Write(color(v))
+		d.w.Write([]byte(color(v)))
 		//      switch kind {
 		// case reflect.String:
 		//     highlightIsOn = true
