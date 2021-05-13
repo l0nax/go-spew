@@ -12,7 +12,7 @@ import (
 // Type represents a GoLang (basic) type and semantics.
 type Type int
 
-// Colors used for the type VALUE.
+// type definition used to represent type VALUES.
 const (
 	TInteger Type = iota + 1
 	TFloat
@@ -23,10 +23,9 @@ const (
 	TNil
 	TArray
 	TStruct
-	TArgs
 )
 
-// Colors used for the TYPE string.
+// type definition used to represent TYPE string.
 const (
 	TTInteger Type = iota + 100
 	TTFloat
@@ -37,41 +36,63 @@ const (
 	TTNil
 	TTArray
 	TTPtr
+	TTAddress
+	TTInterface
+)
+
+// representation for special cases
+const (
+	TLen Type = iota + 200
+	TCap
+	TArgs
 )
 
 // pre-defined colors
 var (
-	cBlue = gcolor.HEX("#82aaff", false)
+	cBlue          = gcolor.HEX("#82aaff", false)
+	cPurple        = gcolor.HEX("#c792ea", false)
+	cOrange        = gcolor.HEX("#f78c6c", false)
+	cSpecial       = gcolor.HEXStyle("#ffffff", "#c17e70")
+	cGreen         = gcolor.HEX("#c3e88d", false)
+	cDarkGreen     = gcolor.HEX("#138040", false)
+	cRadiantYellow = gcolor.HEX("#ffea00", false)
 )
 
-var colorPalette map[Type]gcolor.RGBColor = map[Type]gcolor.RGBColor{
+type ColorPrinter interface {
+	Sprint(a ...interface{}) string
+}
+
+var colorPalette = map[Type]ColorPrinter{
 	TInteger: cBlue,
 	TFloat:   cBlue,
-	TMap:     gcolor.LightRed.RGB(),
 	TDate:    gcolor.Green.RGB(),
 	TString:  gcolor.LightYellow.RGB(),
 	TBool:    gcolor.LightBlue.RGB(),
 	TNil:     gcolor.LightMagenta.RGB(),
 	TArray:   gcolor.LightWhite.RGB(),
 	TStruct:  gcolor.Yellow.RGB(),
-	TArgs:    gcolor.LightRed.RGB(),
 
-	TTInteger: gcolor.Cyan.RGB(),
-	TTFloat:   gcolor.Cyan.RGB(),
-	TTMap:     gcolor.LightRed.RGB(),
-	TTDate:    gcolor.Green.RGB(),
-	TTString:  gcolor.LightYellow.RGB(),
-	TTBool:    gcolor.LightBlue.RGB(),
-	TTNil:     gcolor.LightMagenta.RGB(),
-	TTArray:   gcolor.White.RGB(),
-	TTPtr:     gcolor.Magenta.RGB(),
+	TTInteger:   gcolor.Cyan.RGB(),
+	TTFloat:     gcolor.Cyan.RGB(),
+	TTMap:       gcolor.LightRed.RGB(),
+	TTDate:      gcolor.Green.RGB(),
+	TTString:    cOrange,
+	TTBool:      cPurple,
+	TTArray:     gcolor.White.RGB(),
+	TTPtr:       gcolor.Magenta.RGB(),
+	TTAddress:   cDarkGreen,
+	TTInterface: cRadiantYellow,
+
+	TLen:  cSpecial,
+	TCap:  cSpecial,
+	TArgs: cGreen,
 }
 
 type colorWriter struct {
 	origWriter     io.Writer
 	globalDisabled bool
 	disabled       bool
-	col            gcolor.RGBColor
+	col            ColorPrinter
 }
 
 func stopColor() {
@@ -79,7 +100,7 @@ func stopColor() {
 }
 
 func (c *colorWriter) Write(p []byte) (n int, err error) {
-	if c.globalDisabled || c.disabled {
+	if c.globalDisabled || c.disabled || c.col == nil {
 		return c.origWriter.Write(p)
 	}
 
@@ -89,6 +110,38 @@ func (c *colorWriter) Write(p []byte) (n int, err error) {
 }
 
 var cWriter *colorWriter
+
+// rawColor allows to use our internal types DIRECTLY.
+// Please ONLY use this function if the type is known – skipping the overhead
+// of the reflect package (calling the methods and "searching" the correct color).
+func rawColor(t Type) {
+	col, ok := colorPalette[t]
+
+	cWriter.disabled = !ok
+	cWriter.col = col
+}
+
+func specialColor(t Type) {
+	switch t {
+	case TLen, TCap, TArgs:
+		cWriter.disabled = false
+		cWriter.col = colorPalette[t]
+	}
+}
+
+// colorPtr handles the special case where we're searching the color for pointers.
+// This function exists since there are some special cases, e.g. time.Time or bytes.Buffer,
+// which have a different color than a "normal" pointer.
+func colorPtr(t string) {
+	switch t {
+	case "*bytes.Buffer":
+		// require special color
+		fallthrough
+	default:
+		cWriter.disabled = false
+		cWriter.col = colorPalette[TTPtr]
+	}
+}
 
 func color(t reflect.Value) {
 	cWriter.disabled = false
@@ -113,8 +166,6 @@ func color(t reflect.Value) {
 		cWriter.col = colorPalette[TInteger]
 	case reflect.Float32, reflect.Float64:
 		cWriter.col = colorPalette[TFloat]
-	case reflect.Map:
-		cWriter.col = colorPalette[TMap]
 	case reflect.Bool:
 		cWriter.col = colorPalette[TBool]
 	default:
@@ -140,6 +191,8 @@ func typeColor(t reflect.Type) {
 		cWriter.col = colorPalette[TTMap]
 	case reflect.Bool:
 		cWriter.col = colorPalette[TTBool]
+	case reflect.Interface:
+		cWriter.col = colorPalette[TTInterface]
 	default:
 		cWriter.disabled = true
 	}

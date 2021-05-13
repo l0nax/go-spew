@@ -124,8 +124,12 @@ func (d *dumpState) dumpPtr(v reflect.Value) {
 
 	// Display type information.
 	d.w.Write(openParenBytes)
+	if d.cs.HighlightValues {
+		colorPtr(ve.Type().String())
+	}
 	d.w.Write(bytes.Repeat(asteriskBytes, indirects))
 	d.w.Write([]byte(ve.Type().String()))
+	stopColor()
 	d.w.Write(closeParenBytes)
 
 	// Display pointer information.
@@ -135,7 +139,9 @@ func (d *dumpState) dumpPtr(v reflect.Value) {
 			if i > 0 {
 				d.w.Write(pointerChainBytes)
 			}
+			rawColor(TTAddress)
 			printHexPtr(d.w, addr)
+			stopColor()
 		}
 		d.w.Write(closeParenBytes)
 	}
@@ -144,7 +150,9 @@ func (d *dumpState) dumpPtr(v reflect.Value) {
 	d.w.Write(openParenBytes)
 	switch {
 	case nilFound:
+		rawColor(TNil)
 		d.w.Write(nilAngleBytes)
+		stopColor()
 
 	case cycleFound:
 		d.w.Write(circularBytes)
@@ -293,16 +301,23 @@ func (d *dumpState) dump(v reflect.Value) {
 	if valueLen != 0 || !d.cs.DisableCapacities && valueCap != 0 {
 		d.w.Write(openParenBytes)
 		if valueLen != 0 {
+			specialColor(TLen)
 			d.w.Write(lenEqualsBytes)
 			printInt(d.w, int64(valueLen), 10)
 		}
+
 		if !d.cs.DisableCapacities && valueCap != 0 {
 			if valueLen != 0 {
+				stopColor()
 				d.w.Write(spaceBytes)
 			}
+
+			specialColor(TCap)
 			d.w.Write(capEqualsBytes)
 			printInt(d.w, int64(valueCap), 10)
 		}
+
+		stopColor()
 		d.w.Write(closeParenBytes)
 		d.w.Write(spaceBytes)
 	}
