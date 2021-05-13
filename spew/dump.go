@@ -267,7 +267,15 @@ func (d *dumpState) dump(v reflect.Value) {
 	if !d.ignoreNextType {
 		d.indent()
 		d.w.Write(openParenBytes)
-		d.w.Write([]byte(v.Type().String()))
+
+		typeStr := v.Type()
+		if d.cs.HighlightValues {
+			typeColor(typeStr)
+		}
+
+		d.w.Write([]byte(typeStr.String()))
+		stopColor()
+
 		d.w.Write(closeParenBytes)
 		d.w.Write(spaceBytes)
 	}
@@ -309,31 +317,7 @@ func (d *dumpState) dump(v reflect.Value) {
 		}
 	}
 
-	highlightIsOn := false
-	if d.cs.HighlightValues {
-		d.w.Write([]byte(color(v)))
-		highlightIsOn = true
-		//      switch kind {
-		// case reflect.String:
-		//     highlightIsOn = true
-
-		//     d.w.Write(highlight1StartBytes)
-		// case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int,
-		//     reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint,
-		//     reflect.Float32, reflect.Float64, reflect.Complex64, reflect.Complex128:
-		//     highlightIsOn = true
-
-		//     d.w.Write(highlight2StartBytes)
-		// case reflect.Bool:
-		//     highlightIsOn = true
-
-		//     d.w.Write(highlight3StartBytes)
-		// case reflect.Uintptr, reflect.UnsafePointer, reflect.Chan, reflect.Func:
-		//     highlightIsOn = true
-
-		//     d.w.Write(highlight4StartBytes)
-		// }
-	}
+	color(v)
 
 	switch kind {
 	case reflect.Invalid:
@@ -473,14 +457,18 @@ func (d *dumpState) dump(v reflect.Value) {
 		}
 	}
 
-	if highlightIsOn {
-		d.w.Write(highlightEndBytes)
-	}
+	stopColor()
 }
 
 // fdump is a helper function to consolidate the logic from the various public
 // methods which take varying writers and config states.
 func fdump(cs *ConfigState, w io.Writer, a ...interface{}) {
+	// initialize global colorWriter, if enabled
+	cWriter = &colorWriter{
+		origWriter:     w,
+		globalDisabled: !cs.HighlightValues,
+	}
+
 	for _, arg := range a {
 		if arg == nil {
 			w.Write(interfaceBytes)
@@ -490,7 +478,7 @@ func fdump(cs *ConfigState, w io.Writer, a ...interface{}) {
 			continue
 		}
 
-		d := dumpState{w: w, cs: cs}
+		d := dumpState{w: cWriter, cs: cs}
 		d.pointers = make(map[uintptr]int)
 		d.dump(reflect.ValueOf(arg))
 		d.w.Write(newlineBytes)
