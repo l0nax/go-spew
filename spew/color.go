@@ -150,6 +150,22 @@ func specialColor(t Type) {
 	}
 }
 
+// hexColor is special since it will return the COLORIZED string directly.
+func hexColor(t Type, data []byte) []byte {
+	switch t {
+	case TNonPrintable, TPrintable, TBase10, TWhitespaceChar, TPunctuationChar, TNULByte:
+	default:
+		return data
+	}
+
+	c, ok := colorPalette[t]
+	if !ok {
+		return data
+	}
+
+	return s2b(c.Sprint(byteSlice2String(data)))
+}
+
 // colorPtr handles the special case where we're searching the color for pointers.
 // This function exists since there are some special cases, e.g. time.Time or bytes.Buffer,
 // which have a different color than a "normal" pointer.

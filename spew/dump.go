@@ -241,7 +241,7 @@ func (d *dumpState) dumpSlice(v reflect.Value) {
 	// Hexdump the entire slice as needed.
 	if doHexDump {
 		indent := strings.Repeat(d.cs.Indent, d.depth)
-		str := indent + HexDump(buf)
+		str := indent + HexDump(buf, d.cs.HighlightHex)
 		str = strings.Replace(str, "\n", "\n"+indent, -1)
 		str = strings.TrimRight(str, d.cs.Indent)
 		d.w.Write([]byte(str))
