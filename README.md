@@ -1,9 +1,19 @@
 go-spew
 =======
 
+<!--
 [![Build Status](https://img.shields.io/travis/davecgh/go-spew.svg)](https://travis-ci.org/davecgh/go-spew)
 [![ISC License](http://img.shields.io/badge/license-ISC-blue.svg)](http://copyfree.org)
 [![Coverage Status](https://img.shields.io/coveralls/davecgh/go-spew.svg)](https://coveralls.io/r/davecgh/go-spew?branch=master)
+-->
+
+**NOTE:** This is a fork of [github.com/davecgh/go-spew](https://github.com/davecgh/go-spew) great library.
+I've added colorization, which can be optionally disabled when dumping a struct:
+![Showcase](./.showcase/output_test-main.png)
+
+_Additionally_, this package has been "go modulized".
+
+<br/>
 
 Go-spew implements a deep pretty printer for Go data structures to aid in
 debugging.  A comprehensive suite of tests with 100% test coverage is provided
@@ -18,7 +28,7 @@ post about it
 
 ## Documentation
 
-[![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg)](http://godoc.org/github.com/davecgh/go-spew/spew)
+[![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg)](http://godoc.org/github.com/l0nax/go-spew/spew)
 
 Full `go doc` style documentation for the project can be viewed online without
 installing this package by using the excellent GoDoc site here:
@@ -31,7 +41,7 @@ http://localhost:6060/pkg/github.com/davecgh/go-spew/spew
 ## Installation
 
 ```bash
-$ go get -u github.com/davecgh/go-spew/spew
+$ go get -u github.com/l0nax/go-spew/spew
 ```
 
 ## Quick Start
@@ -39,7 +49,7 @@ $ go get -u github.com/davecgh/go-spew/spew
 Add this import line to the file you're working in:
 
 ```Go
-import "github.com/davecgh/go-spew/spew"
+import "github.com/l0nax/go-spew/spew"
 ```
 
 To dump a variable with full newlines, indentation, type, and pointer
@@ -65,7 +75,9 @@ spew.Fprintf(someWriter, "myVar3: %#v -- myVar4: %#+v", myVar3, myVar4)
 
 ## Debugging a Web Application Example
 
-Here is an example of how you can use `spew.Sdump()` to help debug a web application. Please be sure to wrap your output using the `html.EscapeString()` function for safety reasons. You should also only use this debugging technique in a development environment, never in production.
+Here is an example of how you can use `spew.Sdump()` to help debug a web application.
+Please be sure to wrap your output using the `html.EscapeString()` function for safety reasons.
+You should also only use this debugging technique in a development environment, never in production.
 
 ```Go
 package main
@@ -75,7 +87,7 @@ import (
     "html"
     "net/http"
 
-    "github.com/davecgh/go-spew/spew"
+    "github.com/l0nax/go-spew/spew"
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -196,6 +208,7 @@ operate in this mode on Google App Engine and when compiled with GopherJS.  The
 "safe" build tag may also be specified to force the package to build without
 using the unsafe package.
 
+
 ## License
 
-Go-spew is licensed under the [copyfree](http://copyfree.org) ISC License.
+The _original_ Go-spew was licensed under the [copyfree](http://copyfree.org) ISC License.
