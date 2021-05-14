@@ -47,6 +47,19 @@ const (
 	TArgs
 )
 
+// colors used in the hex dump
+const (
+	// TNonPrintable are Non-printable ASCII characters
+	TNonPrintable Type = iota + 300
+	// TPrintable are Printable (Alphabetic) Characters
+	TPrintable
+	// TBase10 are Base 10 Numerical Digits
+	TBase10
+	TWhitespaceChar
+	TPunctuationChar
+	TNULByte
+)
+
 // pre-defined colors
 var (
 	cBlue          = gcolor.HEX("#82aaff", false)
@@ -78,7 +91,7 @@ var colorPalette = map[Type]ColorPrinter{
 	TTDate:      gcolor.Green.RGB(),
 	TTString:    cOrange,
 	TTBool:      cPurple,
-	TTArray:     gcolor.White.RGB(),
+	TTArray:     cGreen,
 	TTPtr:       gcolor.Magenta.RGB(),
 	TTAddress:   cDarkGreen,
 	TTInterface: cRadiantYellow,
@@ -86,13 +99,21 @@ var colorPalette = map[Type]ColorPrinter{
 	TLen:  cSpecial,
 	TCap:  cSpecial,
 	TArgs: cGreen,
+
+	TNonPrintable:    gcolor.Red.RGB(),
+	TPrintable:       cOrange,
+	TBase10:          cRadiantYellow,
+	TWhitespaceChar:  cDarkGreen,
+	TPunctuationChar: cPurple,
+	TNULByte:         gcolor.Gray.RGB(),
 }
 
 type colorWriter struct {
-	origWriter     io.Writer
-	globalDisabled bool
-	disabled       bool
-	col            ColorPrinter
+	origWriter        io.Writer
+	globalDisabled    bool
+	globalHexDisabled bool
+	disabled          bool
+	col               ColorPrinter
 }
 
 func stopColor() {
@@ -193,6 +214,8 @@ func typeColor(t reflect.Type) {
 		cWriter.col = colorPalette[TTBool]
 	case reflect.Interface:
 		cWriter.col = colorPalette[TTInterface]
+	case reflect.Array, reflect.Slice:
+		cWriter.col = colorPalette[TTArray]
 	default:
 		cWriter.disabled = true
 	}

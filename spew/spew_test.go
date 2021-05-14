@@ -151,8 +151,12 @@ func initSpewTests() {
 		slice []string
 		m     map[string]int
 	}
-	dt := depthTester{indirCir1{nil}, [1]string{"arr"}, []string{"slice"},
-		map[string]int{"one": 1}}
+	dt := depthTester{
+		indirCir1{nil},
+		[1]string{"arr"},
+		[]string{"slice"},
+		map[string]int{"one": 1},
+	}
 
 	// Variable for tests on types which implement error interface.
 	te := customError(10)

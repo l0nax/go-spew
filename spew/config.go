@@ -100,13 +100,15 @@ type ConfigState struct {
 	SpewKeys bool
 
 	// HighlightValues adds colour/color to scalar values in output.
-	// The colours are suitable for ANSI displays.
 	HighlightValues bool
+
+	// HighlightHex adds, if HighlightValues is true, colour/color to the hex dump in output.
+	HighlightHex bool
 }
 
 // Config is the active configuration of the top-level functions.
 // The configuration can be changed by modifying the contents of spew.Config.
-var Config = ConfigState{Indent: " ", HighlightValues: true}
+var Config = ConfigState{Indent: " ", HighlightValues: true, HighlightHex: true}
 
 // Errorf is a wrapper for fmt.Errorf that treats each argument as if it were
 // passed with a Formatter interface returned by c.NewFormatter.  It returns

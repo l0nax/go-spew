@@ -18,7 +18,6 @@ package spew
 
 import (
 	"bytes"
-	"encoding/hex"
 	"fmt"
 	"io"
 	"os"
@@ -231,10 +230,18 @@ func (d *dumpState) dumpSlice(v reflect.Value) {
 		}
 	}
 
+	// TODO: colorize
+	//		Red:	Non-printable ASCII characters
+	//		Orange: Printable (Alphabetic) Characters
+	//		Yellow: Base 10 Numerical Digits
+	//		Green:  ASCII Whitespace Characters
+	//		Purple: Punctuation Characters
+	//		Gray:	NUL byte (00)
+
 	// Hexdump the entire slice as needed.
 	if doHexDump {
 		indent := strings.Repeat(d.cs.Indent, d.depth)
-		str := indent + hex.Dump(buf)
+		str := indent + HexDump(buf)
 		str = strings.Replace(str, "\n", "\n"+indent, -1)
 		str = strings.TrimRight(str, d.cs.Indent)
 		d.w.Write([]byte(str))
@@ -480,8 +487,9 @@ func (d *dumpState) dump(v reflect.Value) {
 func fdump(cs *ConfigState, w io.Writer, a ...interface{}) {
 	// initialize global colorWriter, if enabled
 	cWriter = &colorWriter{
-		origWriter:     w,
-		globalDisabled: !cs.HighlightValues,
+		origWriter:        w,
+		globalDisabled:    !cs.HighlightValues,
+		globalHexDisabled: !cs.HighlightHex,
 	}
 
 	for _, arg := range a {

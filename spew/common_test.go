@@ -47,6 +47,7 @@ func (s *pstringer) String() string {
 type xref1 struct {
 	ps2 *xref2
 }
+
 type xref2 struct {
 	ps1 *xref1
 }
@@ -56,9 +57,11 @@ type xref2 struct {
 type indirCir1 struct {
 	ps2 *indirCir2
 }
+
 type indirCir2 struct {
 	ps3 *indirCir3
 }
+
 type indirCir3 struct {
 	ps1 *indirCir1
 }
